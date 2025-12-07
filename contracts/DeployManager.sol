@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.30;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "./IUtilityContract.sol";
@@ -26,6 +26,7 @@ contract DeployManager is Ownable {
     
 
     error ContractNotActive();
+    error NotEnoughtFundsw();
     error NotEnoughtFunds();
     error ContractDoesNotRegistered();
     error InitializationFailed();

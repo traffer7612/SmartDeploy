@@ -13,6 +13,7 @@ contract BigBoss is IUtilityContract {
     }
 
     uint256 public number;
+    uint256 public constant MAX_NUMBER = 100;
     address public bigBoss;
 
     bool private initialized;

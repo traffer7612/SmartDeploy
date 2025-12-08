@@ -10,7 +10,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title LinearVestingWithCliff
- * @author RemixAI (Improved by Security Audit)
+ * @author traffer7612(Sanzhar)
  * @notice Контракт для линейного вестинга ERC20 токенов с периодом cliff
  * @dev Реализует безопасный механизм вестинга с следующими возможностями:
  *      - Период cliff (задержка перед началом разблокировки)

@@ -24,12 +24,12 @@ contract Wallet {
     constructor(address _logicContract) {
         require(_logicContract != address(0), "Invalid logic contract");
         logicContract = _logicContract;
-        
+
         (bool success, ) = logicContract.delegatecall(
             abi.encodeWithSignature("initialize(address)", msg.sender)
         );
         require(success, "Initialization failed");
-        
+
         owner = msg.sender; // Явно устанавливаем владельца
     }
 
@@ -43,7 +43,7 @@ contract Wallet {
     // ИСПРАВЛЕНО: Переименована функция и добавлены проверки
     function sendEth(address payable _to, uint256 _amount) external {
         require(msg.sender == owner, "Only owner");
-        
+
         (bool success, ) = logicContract.delegatecall(
             abi.encodeWithSignature("sendEther(address,uint256)", _to, _amount)
         );
@@ -51,6 +51,6 @@ contract Wallet {
     }
 
     function deposit() external payable {}
-    
+
     receive() external payable {}
 }

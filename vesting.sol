@@ -21,7 +21,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  *      - Пауза для экстренных ситуаций
  *      - Защита от реентрантности
  *      - Оптимизированное хранение данных через mapping
- * 
+ *
  * Формула вестинга:
  * - До cliff: 0 токенов доступно
  * - После cliff: линейная разблокировка от start до start + totalDuration
@@ -29,9 +29,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  * - releasableAmount = vestedAmount - alreadyReleased
  */
 contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
-    constructor() Ownable (msg.sender) {
-
-        }
+    constructor() Ownable(msg.sender) {}
     using SafeERC20 for IERC20;
     using Strings for uint256;
 
@@ -203,7 +201,6 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @dev Устанавливает адрес токена и владельца контракта
      * @param tokenAddress Адрес ERC20 токена для вестинга
      */
-     
 
     /*//////////////////////////////////////////////////////////////
                         INITIALIZATION FUNCTIONS
@@ -214,12 +211,12 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @dev Устанавливает параметры для вывода токенов
      * @param minClaimAmount_ Минимальная сумма для вывода (в wei токена)
      * @param claimCooldown_ Задержка между выводами в секундах
-     * 
+     *
      * Requirements:
      * - Контракт не должен быть инициализирован
      * - Вызывающий должен быть владельцем
      * - Параметры должны быть больше нуля
-     * 
+     *
      * Emits: {Initialized}
      */
     function initialize(
@@ -250,7 +247,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param totalDuration_ Общая длительность вестинга в секундах
      * @param totalAmount_ Общее количество токенов для вестинга
      * @param revocable_ Может ли владелец отозвать этот вестинг
-     * 
+     *
      * Requirements:
      * - Контракт должен быть инициализирован
      * - Вызывающий должен быть владельцем
@@ -259,9 +256,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * - cliffDuration_ должен быть < totalDuration_
      * - totalAmount_ должен быть > 0
      * - У msg.sender должен быть достаточный баланс и allowance
-     * 
+     *
      * Emits: {VestingCreated}
-     * 
+     *
      * @return vestingId Уникальный ID созданного вестинга
      */
     function createVesting(
@@ -328,14 +325,14 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice Вывод доступных токенов бенефициаром
      * @dev Проходит по всем вестингам вызывающего и выводит доступные токены
-     * 
+     *
      * Requirements:
      * - Контракт должен быть инициализирован
      * - Контракт не должен быть на паузе
      * - Должны быть доступные токены для вывода
      * - Сумма должна быть >= minClaimAmount
      * - Должен пройти cooldown период с последнего вывода
-     * 
+     *
      * Emits: {TokensReleased} для каждого вестинга с выводом
      */
     function release() external nonReentrant whenNotPaused {
@@ -356,7 +353,8 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
 
             // Проверяем cooldown для этого конкретного вестинга
             if (schedule.lastClaimTime > 0) {
-                uint256 timeSinceLastClaim = block.timestamp - schedule.lastClaimTime;
+                uint256 timeSinceLastClaim = block.timestamp -
+                    schedule.lastClaimTime;
                 if (timeSinceLastClaim < claimCooldown) {
                     continue; // Пропускаем этот вестинг, но проверяем другие
                 }
@@ -393,7 +391,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @notice Вывод токенов из конкретного вестинга
      * @dev Позволяет бенефициару вывести токены из определенного вестинга
      * @param vestingId ID вестинга для вывода
-     * 
+     *
      * Requirements:
      * - Контракт должен быть инициализирован
      * - Контракт не должен быть на паузе
@@ -401,25 +399,24 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * - Вестинг не должен быть отозван
      * - Должен пройти cooldown период
      * - Должны быть доступные токены >= minClaimAmount
-     * 
+     *
      * Emits: {TokensReleased}
      */
-    function releaseFromVesting(uint256 vestingId) 
-        external 
-        nonReentrant 
-        whenNotPaused 
-    {
+    function releaseFromVesting(
+        uint256 vestingId
+    ) external nonReentrant whenNotPaused {
         if (!initialized) revert NotInitialized();
 
         VestingSchedule storage schedule = vestingSchedules[vestingId];
-        
+
         if (schedule.beneficiary == address(0)) revert InvalidVestingId();
         if (schedule.beneficiary != msg.sender) revert NotBeneficiary();
         if (schedule.revoked) revert AlreadyRevoked();
 
         // Проверяем cooldown
         if (schedule.lastClaimTime > 0) {
-            uint256 timeSinceLastClaim = block.timestamp - schedule.lastClaimTime;
+            uint256 timeSinceLastClaim = block.timestamp -
+                schedule.lastClaimTime;
             if (timeSinceLastClaim < claimCooldown) {
                 revert CooldownNotEnded(claimCooldown - timeSinceLastClaim);
             }
@@ -452,14 +449,14 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @notice Отзыв вестинга владельцем с возвратом невыпущенных токенов
      * @dev Возвращает владельцу все токены, которые еще не были vested
      * @param vestingId ID вестинга для отзыва
-     * 
+     *
      * Requirements:
      * - Контракт должен быть инициализирован
      * - Вызывающий должен быть владельцем
      * - Вестинг должен существовать
      * - Вестинг должен быть revocable
      * - Вестинг не должен быть уже отозван
-     * 
+     *
      * Emits: {VestingRevoked}
      */
     function revokeVesting(uint256 vestingId) external onlyOwner {
@@ -473,7 +470,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
 
         // Вычисляем, сколько уже vested (включая уже выведенное)
         uint256 vestedAmount = _computeVestedAmount(schedule);
-        
+
         // Сколько нужно вернуть владельцу
         uint256 returnAmount = schedule.totalAmount - vestedAmount;
 
@@ -483,7 +480,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
         // Уменьшаем общую сумму заблокированных токенов
         if (returnAmount > 0) {
             totalVestedAmount -= returnAmount;
-            
+
             // Возвращаем токены владельцу
             token.safeTransfer(owner(), returnAmount);
         }
@@ -522,18 +519,16 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param beneficiary Адрес бенефициара
      * @return totalReleasable Общее количество доступных для вывода токенов
      */
-    function checkReleasableAmount(address beneficiary) 
-        external 
-        view 
-        returns (uint256 totalReleasable) 
-    {
+    function checkReleasableAmount(
+        address beneficiary
+    ) external view returns (uint256 totalReleasable) {
         if (!initialized) revert NotInitialized();
 
         uint256[] memory vestingIds = beneficiaryVestings[beneficiary];
 
         for (uint256 i = 0; i < vestingIds.length; i++) {
             VestingSchedule storage schedule = vestingSchedules[vestingIds[i]];
-            
+
             if (!schedule.revoked) {
                 totalReleasable += _computeReleasableAmount(schedule);
             }
@@ -547,15 +542,13 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param vestingId ID вестинга
      * @return releasable Количество доступных для вывода токенов
      */
-    function checkReleasableAmountForVesting(uint256 vestingId)
-        external
-        view
-        returns (uint256 releasable)
-    {
+    function checkReleasableAmountForVesting(
+        uint256 vestingId
+    ) external view returns (uint256 releasable) {
         if (!initialized) revert NotInitialized();
 
         VestingSchedule storage schedule = vestingSchedules[vestingId];
-        
+
         if (schedule.beneficiary == address(0)) revert InvalidVestingId();
         if (schedule.revoked) return 0;
 
@@ -567,11 +560,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param beneficiary Адрес бенефициара
      * @return count Количество вестингов (включая отозванные)
      */
-    function getVestingCount(address beneficiary) 
-        external 
-        view 
-        returns (uint256 count) 
-    {
+    function getVestingCount(
+        address beneficiary
+    ) external view returns (uint256 count) {
         return beneficiaryVestings[beneficiary].length;
     }
 
@@ -580,11 +571,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param beneficiary Адрес бенефициара
      * @return vestingIds Массив ID вестингов
      */
-    function getVestingIds(address beneficiary)
-        external
-        view
-        returns (uint256[] memory vestingIds)
-    {
+    function getVestingIds(
+        address beneficiary
+    ) external view returns (uint256[] memory vestingIds) {
         return beneficiaryVestings[beneficiary];
     }
 
@@ -593,15 +582,13 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param vestingId ID вестинга
      * @return schedule Структура с данными вестинга
      */
-    function getVestingSchedule(uint256 vestingId)
-        external
-        view
-        returns (VestingSchedule memory schedule)
-    {
+    function getVestingSchedule(
+        uint256 vestingId
+    ) external view returns (VestingSchedule memory schedule) {
         if (!initialized) revert NotInitialized();
 
         schedule = vestingSchedules[vestingId];
-        
+
         if (schedule.beneficiary == address(0)) revert InvalidVestingId();
 
         return schedule;
@@ -621,7 +608,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @return revocable Можно ли отозвать
      * @return revoked Отозван ли
      */
-    function getVestingDetails(uint256 vestingId)
+    function getVestingDetails(
+        uint256 vestingId
+    )
         external
         view
         returns (
@@ -640,7 +629,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
         if (!initialized) revert NotInitialized();
 
         VestingSchedule storage schedule = vestingSchedules[vestingId];
-        
+
         if (schedule.beneficiary == address(0)) revert InvalidVestingId();
 
         beneficiary = schedule.beneficiary;
@@ -661,11 +650,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @return canClaim Можно ли вывести
      * @return reason Причина, если нельзя
      */
-    function canClaimFromVesting(uint256 vestingId)
-        external
-        view
-        returns (bool canClaim, string memory reason)
-    {
+    function canClaimFromVesting(
+        uint256 vestingId
+    ) external view returns (bool canClaim, string memory reason) {
         if (!initialized) {
             return (false, "Contract not initialized");
         }
@@ -681,7 +668,8 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
         }
 
         if (schedule.lastClaimTime > 0) {
-            uint256 timeSinceLastClaim = block.timestamp - schedule.lastClaimTime;
+            uint256 timeSinceLastClaim = block.timestamp -
+                schedule.lastClaimTime;
             if (timeSinceLastClaim < claimCooldown) {
                 return (
                     false,
@@ -723,11 +711,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param schedule График вестинга
      * @return vestedAmount Количество vested токенов (включая уже выведенные)
      */
-    function _computeVestedAmount(VestingSchedule storage schedule)
-        internal
-        view
-        returns (uint256 vestedAmount)
-    {
+    function _computeVestedAmount(
+        VestingSchedule storage schedule
+    ) internal view returns (uint256 vestedAmount) {
         uint256 currentTime = block.timestamp;
 
         // До начала вестинга
@@ -748,7 +734,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
         }
 
         // Линейный vesting: vestedAmount = (totalAmount * elapsed) / totalDuration
-        vestedAmount = (schedule.totalAmount * elapsed) / schedule.totalDuration;
+        vestedAmount =
+            (schedule.totalAmount * elapsed) /
+            schedule.totalDuration;
 
         return vestedAmount;
     }
@@ -759,11 +747,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @param schedule График вестинга
      * @return Доступное для вывода количество токенов
      */
-    function _computeReleasableAmount(VestingSchedule storage schedule)
-        internal
-        view
-        returns (uint256)
-    {
+    function _computeReleasableAmount(
+        VestingSchedule storage schedule
+    ) internal view returns (uint256) {
         uint256 vestedAmount = _computeVestedAmount(schedule);
         return vestedAmount - schedule.released;
     }
@@ -776,14 +762,16 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @notice Обновить минимальную сумму для вывода
      * @dev Может вызвать только владелец
      * @param newMinClaimAmount Новое значение минимальной суммы
-     * 
+     *
      * Requirements:
      * - Вызывающий должен быть владельцем
      * - Новое значение должно быть > 0
-     * 
+     *
      * Emits: {MinClaimAmountUpdated}
      */
-    function updateMinClaimAmount(uint256 newMinClaimAmount) external onlyOwner {
+    function updateMinClaimAmount(
+        uint256 newMinClaimAmount
+    ) external onlyOwner {
         if (newMinClaimAmount == 0) revert ZeroAmount();
 
         uint256 oldAmount = minClaimAmount;
@@ -796,11 +784,11 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @notice Обновить cooldown период
      * @dev Может вызвать только владелец
      * @param newClaimCooldown Новое значение cooldown в секундах
-     * 
+     *
      * Requirements:
      * - Вызывающий должен быть владельцем
      * - Новое значение должно быть > 0
-     * 
+     *
      * Emits: {ClaimCooldownUpdated}
      */
     function updateClaimCooldown(uint256 newClaimCooldown) external onlyOwner {
@@ -815,7 +803,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice Поставить контракт на паузу
      * @dev Останавливает все операции вывода и создания вестингов
-     * 
+     *
      * Requirements:
      * - Вызывающий должен быть владельцем
      * - Контракт не должен быть на паузе
@@ -827,7 +815,7 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice Снять контракт с паузы
      * @dev Возобновляет все операции
-     * 
+     *
      * Requirements:
      * - Вызывающий должен быть владельцем
      * - Контракт должен быть на паузе
@@ -841,12 +829,12 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      * @dev ВНИМАНИЕ: Использовать только в критических ситуациях!
      *      Выводит только "свободные" токены (не заблокированные в вестингах)
      * @param amount Количество токенов для вывода
-     * 
+     *
      * Requirements:
      * - Вызывающий должен быть владельцем
      * - Контракт должен быть на паузе
      * - amount не должен превышать свободные токены
-     * 
+     *
      * Emits: {EmergencyWithdraw}
      */
     function emergencyWithdraw(uint256 amount) external onlyOwner whenPaused {
@@ -869,8 +857,9 @@ contract LinearVestingWithCliff is Ownable, Pausable, ReentrancyGuard {
      */
     function getFreeBalance() external view returns (uint256 freeBalance) {
         uint256 contractBalance = token.balanceOf(address(this));
-        return contractBalance > totalVestedAmount 
-            ? contractBalance - totalVestedAmount 
-            : 0;
+        return
+            contractBalance > totalVestedAmount
+                ? contractBalance - totalVestedAmount
+                : 0;
     }
 }

@@ -112,7 +112,7 @@ contract MultiSigWallet {
     }
     
     /// @notice Максимальное количество владельцев
-    uint256 public constant MAX_OWNER_COUNT = 501;
+    uint256 public constant MAX_OWNER_COUNT = 50;
     
     /// @notice Максимальный размер данных транзакции (100KB)
     uint256 public constant MAX_DATA_SIZE = 100_000;

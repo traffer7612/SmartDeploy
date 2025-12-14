@@ -329,13 +329,16 @@ contract MultiSigWallet {
         _status = _NOT_ENTERED;
     }
     
-    /* ========== RECEIVE FUNCTION ========== */
-    
-    /**
-     * @notice Позволяет контракту принимать ETH
-     * @dev Автоматически вызывается при отправке ETH на контракт
-     */
-    receive() external payable {
+     /* ========== RECEIVE / FALLBACK ========== */
+
+    /// @notice Позволяет контракту принимать ETH. Вызывает событие Deposit.
+    receive() external payable whenNotPaused {
+        emit Deposit(msg.sender, msg.value, address(this).balance);
+    }
+
+    /// @notice Fallback-функция для обработки вызовов с некорректными данными.
+    ///         Также принимает ETH, если `receive()` не определена. Вызывает событие Deposit.
+    fallback() external payable whenNotPaused {
         emit Deposit(msg.sender, msg.value, address(this).balance);
     }
     
